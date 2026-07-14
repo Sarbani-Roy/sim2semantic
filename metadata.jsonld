@@ -1,0 +1,573 @@
+{
+  "@context": {
+    "local": "https://github.com/Simulation-Benchmarks/rotating-cylinders/",
+    "@vocab": "http://w3id.org/nfdi4ing/metadata4ing#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "schema": "https://schema.org/",
+    "cr": "http://mlcommons.org/croissant/",
+    "qudt": "http://qudt.org/schema/qudt/",
+    "m4i": "http://w3id.org/nfdi4ing/metadata4ing#",
+    "mathmod": "https://mardi4nfdi.de/mathmoddb#",
+    "label": {
+      "@id": "rdfs:label"
+    },
+    "Field": {
+      "@id": "cr:Field"
+    },
+    "file object": {
+      "@id": "cr:FileObject"
+    },
+    "method": {
+      "@id": "m4i:Method"
+    },
+    "numerical variable": {
+      "@id": "m4i:NumericalVariable"
+    },
+    "processing step": {
+      "@id": "m4i:ProcessingStep"
+    },
+    "tool": {
+      "@id": "m4i:Tool"
+    },
+    "has numerical value": {
+      "@id": "m4i:hasNumericalValue"
+    },
+    "has unit": {
+      "@id": "m4i:hasUnit"
+    },
+    "has quantity kind": {
+      "@id": "m4i:hasKindOfQuantity"
+    },
+    "has part": {
+      "@id": "obo:BFO_0000051"
+    },
+    "has input": {
+      "@id": "obo:RO_0002233"
+    },
+    "has output": {
+      "@id": "obo:RO_0002234"
+    },
+    "has employed tool": {
+      "@id": "m4i:hasEmployedTool"
+    },
+    "has configuration": {
+      "@id": "m4i:usesConfiguration"
+    },
+    "has parameter set": {
+      "@id": "m4i:hasParameterSet"
+    },
+    "evaluates": {
+      "@id": "m4i:evaluates"
+    },
+    "investigates": {
+      "@id": "m4i:investigates"
+    },
+    "uses": "mathmod:uses",
+    "describedAsDocumentedBy": "mathmod:describedAsDocumentedBy",
+    "extract": {
+      "@id": "cr:extract"
+    },
+    "jsonPath": {
+      "@id": "cr:jsonPath"
+    },
+    "source": {
+      "@id": "cr:source"
+    },
+    "represents": {
+      "@id": "sio:SIO_000210"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "local:bm-rotating-cylinders",
+      "@type": "m4i:Benchmark",
+      "label": "rotating cylinders",
+      "investigates": {
+        "@id": "https://portal.mardi4nfdi.de/entity/Q6830614"
+      },
+      "uses": {
+        "@id": "https://portal.mardi4nfdi.de/entity/Q6830614"
+      },
+      "evaluates": [
+        {
+          "@id": "local:metric_l2_error_pressure_rel"
+        },
+        {
+          "@id": "local:metric_l2_error_velocity_rel"
+        }
+      ],
+      "has parameter set": [
+        {
+          "@id": "local:configuration_rotatingcylinders"
+        }
+      ],
+      "describedAsDocumentedBy": {
+        "@id": "local:publication"
+      },
+      "schema:version": "1.0.0"
+    },
+    {
+      "@id": "local:extract_l2_error_pressure_rel",
+      "@type": "cr:DataSource",
+      "jsonPath": "/l2_error_pressure_rel"
+    },
+    {
+      "@id": "local:metric_l2_error_pressure_rel",
+      "@type": "numerical variable",
+      "label": "l2_error_pressure_rel",
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Count"
+      }
+    },
+    {
+      "@id": "local:field_l2_error_pressure_rel",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Double"
+      },
+      "represents": {
+        "@id": "local:metric_l2_error_pressure_rel"
+      },
+      "source": {
+        "@id": "local:source_l2_error_pressure_rel"
+      }
+    },
+    {
+      "@id": "local:source_l2_error_pressure_rel",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_l2_error_pressure_rel"
+      },
+      "file object": {
+        "@id": "local:summary_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_l2_error_velocity_rel",
+      "@type": "cr:DataSource",
+      "jsonPath": "/l2_error_velocity_rel"
+    },
+    {
+      "@id": "local:metric_l2_error_velocity_rel",
+      "@type": "numerical variable",
+      "label": "l2_error_velocity_rel",
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Count"
+      }
+    },
+    {
+      "@id": "local:field_l2_error_velocity_rel",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Double"
+      },
+      "represents": {
+        "@id": "local:metric_l2_error_velocity_rel"
+      },
+      "source": {
+        "@id": "local:source_l2_error_velocity_rel"
+      }
+    },
+    {
+      "@id": "local:source_l2_error_velocity_rel",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_l2_error_velocity_rel"
+      },
+      "file object": {
+        "@id": "local:summary_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Cells0",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Cells0"
+    },
+    {
+      "@id": "local:variable_Cells0_80",
+      "label": "Cells0",
+      "has numerical value": 80,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Cells0_80",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Cells0_80"
+      },
+      "source": {
+        "@id": "local:source_Cells0_80"
+      }
+    },
+    {
+      "@id": "local:source_Cells0_80",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Cells0"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Cells1",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Cells1"
+    },
+    {
+      "@id": "local:variable_Cells1_320",
+      "label": "Cells1",
+      "has numerical value": 320,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Cells1_320",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Cells1_320"
+      },
+      "source": {
+        "@id": "local:source_Cells1_320"
+      }
+    },
+    {
+      "@id": "local:source_Cells1_320",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Cells1"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Grading0",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Grading0"
+    },
+    {
+      "@id": "local:variable_Grading0_1p1",
+      "label": "Grading0",
+      "has numerical value": 1.1,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Grading0_1p1",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Grading0_1p1"
+      },
+      "source": {
+        "@id": "local:source_Grading0_1p1"
+      }
+    },
+    {
+      "@id": "local:source_Grading0_1p1",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Grading0"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Grading1",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Grading1"
+    },
+    {
+      "@id": "local:variable_Grading1_1p0",
+      "label": "Grading1",
+      "has numerical value": 1.0,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Grading1_1p0",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Grading1_1p0"
+      },
+      "source": {
+        "@id": "local:source_Grading1_1p0"
+      }
+    },
+    {
+      "@id": "local:source_Grading1_1p0",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Grading1"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Radial0",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Radial0"
+    },
+    {
+      "@id": "local:variable_Radial0_1p0",
+      "label": "Radial0",
+      "has numerical value": 1.0,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Radial0_1p0",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Radial0_1p0"
+      },
+      "source": {
+        "@id": "local:source_Radial0_1p0"
+      }
+    },
+    {
+      "@id": "local:source_Radial0_1p0",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Radial0"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Angular1",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Angular1"
+    },
+    {
+      "@id": "local:variable_Angular1_0p0",
+      "label": "Angular1",
+      "has numerical value": 0.0,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Angular1_0p0",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Angular1_0p0"
+      },
+      "source": {
+        "@id": "local:source_Angular1_0p0"
+      }
+    },
+    {
+      "@id": "local:source_Angular1_0p0",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Angular1"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Name",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Name"
+    },
+    {
+      "@id": "local:variable_Name_test_rotatingcylinders",
+      "label": "Name",
+      "has numerical value": "test_rotatingcylinders",
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Name_test_rotatingcylinders",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Name_test_rotatingcylinders"
+      },
+      "source": {
+        "@id": "local:source_Name_test_rotatingcylinders"
+      }
+    },
+    {
+      "@id": "local:source_Name_test_rotatingcylinders",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Name"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Omega1",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Omega1"
+    },
+    {
+      "@id": "local:variable_Omega1_100p0",
+      "label": "Omega1",
+      "has numerical value": 100.0,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Omega1_100p0",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Omega1_100p0"
+      },
+      "source": {
+        "@id": "local:source_Omega1_100p0"
+      }
+    },
+    {
+      "@id": "local:source_Omega1_100p0",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Omega1"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:extract_Omega2",
+      "@type": "cr:DataSource",
+      "jsonPath": "/Omega2"
+    },
+    {
+      "@id": "local:variable_Omega2_0p0",
+      "label": "Omega2",
+      "has numerical value": 0.0,
+      "has unit": {
+        "@id": "unit:UNITLESS"
+      }
+    },
+    {
+      "@id": "local:field_Omega2_0p0",
+      "@type": "Field",
+      "dataType": {
+        "@id": "schema:Float"
+      },
+      "represents": {
+        "@id": "local:variable_Omega2_0p0"
+      },
+      "source": {
+        "@id": "local:source_Omega2_0p0"
+      }
+    },
+    {
+      "@id": "local:source_Omega2_0p0",
+      "@type": "cr:DataSource",
+      "extract": {
+        "@id": "local:extract_Omega2"
+      },
+      "file object": {
+        "@id": "local:parameter_file_object"
+      }
+    },
+    {
+      "@id": "local:configuration_rotatingcylinders",
+      "@type": "m4i:ParameterSet",
+      "label": "rotatingcylinders",
+      "identifier": "rotatingcylinders",
+      "has part": [
+        {
+          "@id": "local:variable_Cells0_80"
+        },
+        {
+          "@id": "local:variable_Cells1_320"
+        },
+        {
+          "@id": "local:variable_Grading0_1p1"
+        },
+        {
+          "@id": "local:variable_Grading1_1p0"
+        },
+        {
+          "@id": "local:variable_Radial0_1p0"
+        },
+        {
+          "@id": "local:variable_Angular1_0p0"
+        },
+        {
+          "@id": "local:variable_Name_test_rotatingcylinders"
+        },
+        {
+          "@id": "local:variable_Omega1_100p0"
+        },
+        {
+          "@id": "local:variable_Omega2_0p0"
+        }
+      ]
+    },
+    {
+      "@id": "https://portal.mardi4nfdi.de/entity/Q6830614",
+      "@type": "mathmod:ResearchProblem",
+      "label": "Taylor\u2013Couette flow"
+    },
+    {
+      "@id": "local:publication",
+      "@type": "mathmod:Publication",
+      "label": "Publication"
+    },
+    {
+      "@id": "local:software",
+      "@type": "tool",
+      "label": "DuMux"
+    },
+    {
+      "@id": "local:parameter_file_object",
+      "@type": "cr:FileObject",
+      "label": "parameter.json"
+    },
+    {
+      "@id": "local:summary_file_object",
+      "@type": "cr:FileObject",
+      "label": "solution_metrics.json"
+    }
+  ]
+}

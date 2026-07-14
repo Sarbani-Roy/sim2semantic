@@ -1,0 +1,24 @@
+# --- Python Caches & Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# --- Local Project Caches ---
+# Bypasses committing the local AI metadata cache
+.parameter_metadata_cache.json
+
+# --- API Keys & Secrets ---
+# Crucial: Never commit your OpenAI keys to GitHub!
+.env
+.env.local
+.env.*
+
+# --- IDEs & System Files ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
