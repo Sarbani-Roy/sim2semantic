@@ -16,11 +16,16 @@ from pathlib import Path
 from typing import Any
 
 from ai_parameter_inference import (
+    DEFAULT_PROVIDER,
+    DEFAULT_SCENARIO_SECTIONS,
+    PROVIDER_CONFIG,
+    default_scenario_candidates,
     discover_parameters,
     infer_parameter_metadata,
-    build_parameter_fields, 
-    load_cache, 
-    save_cache
+    build_parameter_fields,
+    load_cache,
+    read_text,
+    save_cache,
 )
 
 
@@ -374,6 +379,20 @@ def main() -> None:
     ap.add_argument("--scenario-params", type=str, default=None,
                      help="Comma-separated list of raw parameter keys (e.g., 'Cells0,Cells1') that are scenario-specific. "
                           "If omitted, you will be prompted interactively.")
+    ap.add_argument("--provider", type=str, choices=sorted(PROVIDER_CONFIG), default=DEFAULT_PROVIDER,
+                     help=f"LLM provider used to infer parameter metadata (default: {DEFAULT_PROVIDER}). "
+                          "Groq is free and requires GROQ_API_KEY; OpenAI requires OPENAI_API_KEY and billing.")
+    ap.add_argument("--model", type=str, default=None,
+                     help="Model name to use for the chosen --provider. Defaults to "
+                          f"'{PROVIDER_CONFIG['groq']['default_model']}' for groq or "
+                          f"'{PROVIDER_CONFIG['openai']['default_model']}' for openai.")
+    ap.add_argument("--fallback-on-error", action="store_true",
+                     help="If the LLM call fails (e.g. quota exceeded, network error), fall back to "
+                          "local placeholder metadata (unitless, confidence 0.0) instead of exiting. "
+                          "These placeholders are NOT written to the cache, so a future run will retry the API.")
+    ap.add_argument("--verbose", action="store_true",
+                     help="Print the request details and raw LLM response for each API call "
+                          "(endpoint, model, token usage, timing, and the exact response text).")
     args = ap.parse_args()
 
     if not args.module_dir.is_dir():
@@ -411,58 +430,68 @@ def main() -> None:
             print("Warning: None of the parameters specified in --scenario-params matched. Falling back to interactive selection.", file=sys.stderr)
 
     if not selected_candidates:
-        # Prompt user interactively if in an interactive shell
-        if not sys.stdin.isatty():
-            print("\n[Non-interactive terminal detected]: Defaulting to treating ALL parameters as scenario-specific.")
-            selected_candidates = list(raw_candidates)
-        else:
-            while True:
-                print("\n=== Parameter Selection ===")
-                print("Select parameters by typing their index numbers (e.g., 0, 2, 4).\n")
-                
-                # Print tabular structure (max 2 columns)
-                cols = 2
-                longest_formatted_len = max(len(f"[{i:2d}] {c.key}") for i, c in enumerate(raw_candidates))
-                col_width = longest_formatted_len + 4  # padding margin
-                
-                for r_idx in range(0, len(raw_candidates), cols):
-                    chunk = raw_candidates[r_idx:r_idx+cols]
-                    row_str = "".join(f"[{r_idx + idx:2d}] {cand.key}".ljust(col_width) for idx, cand in enumerate(chunk))
-                    print("  " + row_str)
-                    
-                print("\nInstructions:")
-                print("  - Type the numbers of your selections separated by commas (e.g., 0, 2, 4)")
-                print("  - Press Enter to select ALL parameters as scenario-specific")
-                
-                try:
-                    user_input = input("\nSelect scenario-specific parameters: ").strip()
-                    if user_input:
-                        # Extract integers cleanly
-                        indices = [int(i.strip()) for i in user_input.split(",") if i.strip().replace("-", "").isdigit()]
-                        temp_selections = [raw_candidates[i] for i in indices if 0 <= i < len(raw_candidates)]
-                        if not temp_selections:
-                            print("No valid indices were selected. Please try again.", file=sys.stderr)
-                            continue
-                    else:
-                        temp_selections = list(raw_candidates)
-                        
-                    # Show confirmation/correction step
-                    print("\n--- Review Your Selection ---")
-                    print(f"Scenario-Specific: {', '.join(c.key for c in temp_selections)}")
-                    print(f"Global/Constant:   {', '.join(c.key for c in raw_candidates if c not in temp_selections) or 'None'}")
-                    
-                    confirm = input("\nIs this correct? Confirm (y) or Correct/Change (n): ").strip().lower()
-                    if confirm in ("y", "yes", ""):
-                        selected_candidates = temp_selections
-                        break
-                    else:
-                        print("\nLet's correct your selections.")
+        default_candidates = default_scenario_candidates(raw_candidates)
+        default_indices = {
+            i for i, c in enumerate(raw_candidates) if c in default_candidates
+        }
+        sections_label = ", ".join(sorted(DEFAULT_SCENARIO_SECTIONS))
+        checked_indices = set(default_indices)
+
+        while True:
+            print("\n=== Parameter Selection ===")
+            print(f"Parameters under [{sections_label}] are pre-selected by default (marked [x]).\n")
+
+            # Print tabular structure (max 2 columns) with checkbox markers
+            cols = 2
+            longest_formatted_len = max(len(f"[x] {i:2d} {c.key}") for i, c in enumerate(raw_candidates))
+            col_width = longest_formatted_len + 4  # padding margin
+
+            for r_idx in range(0, len(raw_candidates), cols):
+                chunk = raw_candidates[r_idx:r_idx + cols]
+                row_str = "".join(
+                    f"[{'x' if (r_idx + idx) in checked_indices else ' '}] {r_idx + idx:2d} {cand.key}".ljust(col_width)
+                    for idx, cand in enumerate(chunk)
+                )
+                print("  " + row_str)
+
+            print("\nInstructions:")
+            print("  - Type index numbers to toggle them on/off (e.g., 0, 3, 5)")
+            print("  - Type 'all' to select everything, or 'none' to clear the selection")
+            print("  - Repeat as many times as needed -- each entry toggles from where you left off")
+            print("  - Finally, press Enter with no input to confirm the selection and proceed")
+
+            try:
+                user_input = input("\nToggle selection (or Enter to confirm): ").strip().lower()
+
+                if not user_input:
+                    if not checked_indices:
+                        print("No parameters selected. Please select at least one.", file=sys.stderr)
                         continue
-                        
-                except (EOFError, KeyboardInterrupt):
-                    print("\nInput cancelled. Falling back to treating ALL parameters as scenario-specific.", file=sys.stderr)
-                    selected_candidates = list(raw_candidates)
+                    selected_candidates = [c for i, c in enumerate(raw_candidates) if i in checked_indices]
                     break
+
+                if user_input == "all":
+                    checked_indices = set(range(len(raw_candidates)))
+                    continue
+                if user_input == "none":
+                    checked_indices = set()
+                    continue
+
+                toggled = [int(tok.strip()) for tok in user_input.split(",") if tok.strip().lstrip("-").isdigit()]
+                valid_toggled = [i for i in toggled if 0 <= i < len(raw_candidates)]
+                if not valid_toggled:
+                    print("No valid indices recognized. Please try again.", file=sys.stderr)
+                    continue
+                for i in valid_toggled:
+                    checked_indices.symmetric_difference_update({i})
+
+            except (EOFError, KeyboardInterrupt):
+                print(
+                    f"\nInput cancelled. Falling back to the default: parameters under [{sections_label}].",
+                    file=sys.stderr,
+                )
+                selected_candidates = default_candidates
+                break
 
     print(f"\nFinal Selection Confirmed.")
     print(f"Scenario-Specific: {', '.join(c.key for c in selected_candidates)}")
@@ -483,20 +512,54 @@ def main() -> None:
             missing_candidates.append(candidate)
             
     if missing_candidates:
-        print(f"\n[API DISABLED] Generating local fallback metadata for {len(missing_candidates)} parameters...")
-        new_inferred = []
-        for candidate in missing_candidates:
-            new_inferred.append({
-                "semantic_name": candidate.key,
-                "ini": [candidate.section, candidate.key],
-                "index": 0,
-                "datatype": "schema:Float",
-                "unit": "unit:UNITLESS",
-                "quantityKind": None,
-                "confidence": 0.0,
-                "explanation": "Fallback generated because the OpenAI API query was commented out."
-            })
-        final_metadata.extend(new_inferred)
+        resolved_model = args.model or PROVIDER_CONFIG[args.provider]["default_model"]
+        print(f"\nQuerying {args.provider} ({resolved_model}) for {len(missing_candidates)} parameter(s) not found in cache...")
+        try:
+            new_inferred = infer_parameter_metadata(
+                candidates=missing_candidates,
+                main_cc=read_text(main_cc_path),
+                problem_hh=read_text(problem_hh_path),
+                provider=args.provider,
+                model=args.model,
+                verbose=args.verbose,
+            )
+        except (RuntimeError, ValueError) as exc:
+            if not args.fallback_on_error:
+                sys.exit(
+                    f"Error: {args.provider} parameter inference failed -- {exc}\n"
+                    "Pass --fallback-on-error to use local placeholder metadata instead of exiting."
+                )
+
+            print(
+                f"Warning: {args.provider} inference failed ({exc}). "
+                f"Using local placeholder metadata for {len(missing_candidates)} parameter(s) instead.",
+                file=sys.stderr,
+            )
+            new_inferred = [
+                {
+                    "semantic_name": candidate.key,
+                    "ini": [candidate.section, candidate.key],
+                    "index": 0,
+                    "datatype": "schema:Float",
+                    "unit": "unit:UNITLESS",
+                    "quantityKind": None,
+                    "confidence": 0.0,
+                    "explanation": "Placeholder generated because the OpenAI API call failed.",
+                }
+                for candidate in missing_candidates
+            ]
+            final_metadata.extend(new_inferred)
+            # Deliberately NOT written to the cache -- placeholders are low-confidence
+            # stand-ins, so a future run should retry the API rather than reuse them.
+        else:
+            final_metadata.extend(new_inferred)
+
+            # Merge the newly inferred entries into the on-disk cache, keeping
+            # any previously cached entries untouched.
+            merged_cache = dict(cache_lookup)
+            for item in new_inferred:
+                merged_cache[(item["ini"][0], item["ini"][1])] = item
+            save_cache(args.module_dir, list(merged_cache.values()))
     else:
         print("Using cached parameter metadata (loaded from local file, 0 API queries triggered).")
 

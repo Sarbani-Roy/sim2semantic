@@ -186,324 +186,342 @@
       }
     },
     {
-      "@id": "local:extract_Cells0",
+      "@id": "local:extract_cells_radial",
       "@type": "cr:DataSource",
-      "jsonPath": "/Cells0"
+      "jsonPath": "/cells_radial"
     },
     {
-      "@id": "local:variable_Cells0_80",
-      "label": "Cells0",
+      "@id": "local:variable_cells_radial_80",
+      "label": "cells_radial",
       "has numerical value": 80,
       "has unit": {
         "@id": "unit:UNITLESS"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Count"
       }
     },
     {
-      "@id": "local:field_Cells0_80",
+      "@id": "local:field_cells_radial_80",
       "@type": "Field",
       "dataType": {
-        "@id": "schema:Float"
+        "@id": "schema:Integer"
       },
       "represents": {
-        "@id": "local:variable_Cells0_80"
+        "@id": "local:variable_cells_radial_80"
       },
       "source": {
-        "@id": "local:source_Cells0_80"
+        "@id": "local:source_cells_radial_80"
       }
     },
     {
-      "@id": "local:source_Cells0_80",
+      "@id": "local:source_cells_radial_80",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Cells0"
+        "@id": "local:extract_cells_radial"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Cells1",
+      "@id": "local:extract_cells_axial",
       "@type": "cr:DataSource",
-      "jsonPath": "/Cells1"
+      "jsonPath": "/cells_axial"
     },
     {
-      "@id": "local:variable_Cells1_320",
-      "label": "Cells1",
+      "@id": "local:variable_cells_axial_320",
+      "label": "cells_axial",
       "has numerical value": 320,
       "has unit": {
         "@id": "unit:UNITLESS"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Count"
       }
     },
     {
-      "@id": "local:field_Cells1_320",
+      "@id": "local:field_cells_axial_320",
       "@type": "Field",
       "dataType": {
-        "@id": "schema:Float"
+        "@id": "schema:Integer"
       },
       "represents": {
-        "@id": "local:variable_Cells1_320"
+        "@id": "local:variable_cells_axial_320"
       },
       "source": {
-        "@id": "local:source_Cells1_320"
+        "@id": "local:source_cells_axial_320"
       }
     },
     {
-      "@id": "local:source_Cells1_320",
+      "@id": "local:source_cells_axial_320",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Cells1"
+        "@id": "local:extract_cells_axial"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Grading0",
+      "@id": "local:extract_grid_grading_radial",
       "@type": "cr:DataSource",
-      "jsonPath": "/Grading0"
+      "jsonPath": "/grid_grading_radial"
     },
     {
-      "@id": "local:variable_Grading0_1p1",
-      "label": "Grading0",
-      "has numerical value": 1.1,
+      "@id": "local:variable_grid_grading_radial_m1p1",
+      "label": "grid_grading_radial",
+      "has numerical value": -1.1,
       "has unit": {
         "@id": "unit:UNITLESS"
       }
     },
     {
-      "@id": "local:field_Grading0_1p1",
+      "@id": "local:field_grid_grading_radial_m1p1",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Grading0_1p1"
+        "@id": "local:variable_grid_grading_radial_m1p1"
       },
       "source": {
-        "@id": "local:source_Grading0_1p1"
+        "@id": "local:source_grid_grading_radial_m1p1"
       }
     },
     {
-      "@id": "local:source_Grading0_1p1",
+      "@id": "local:source_grid_grading_radial_m1p1",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Grading0"
+        "@id": "local:extract_grid_grading_radial"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Grading1",
+      "@id": "local:extract_grid_grading_axial",
       "@type": "cr:DataSource",
-      "jsonPath": "/Grading1"
+      "jsonPath": "/grid_grading_axial"
     },
     {
-      "@id": "local:variable_Grading1_1p0",
-      "label": "Grading1",
+      "@id": "local:variable_grid_grading_axial_1p0",
+      "label": "grid_grading_axial",
       "has numerical value": 1.0,
       "has unit": {
         "@id": "unit:UNITLESS"
       }
     },
     {
-      "@id": "local:field_Grading1_1p0",
+      "@id": "local:field_grid_grading_axial_1p0",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Grading1_1p0"
+        "@id": "local:variable_grid_grading_axial_1p0"
       },
       "source": {
-        "@id": "local:source_Grading1_1p0"
+        "@id": "local:source_grid_grading_axial_1p0"
       }
     },
     {
-      "@id": "local:source_Grading1_1p0",
+      "@id": "local:source_grid_grading_axial_1p0",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Grading1"
+        "@id": "local:extract_grid_grading_axial"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Radial0",
+      "@id": "local:extract_radial_positions",
       "@type": "cr:DataSource",
-      "jsonPath": "/Radial0"
+      "jsonPath": "/radial_positions"
     },
     {
-      "@id": "local:variable_Radial0_1p0",
-      "label": "Radial0",
-      "has numerical value": 1.0,
+      "@id": "local:variable_radial_positions_2p0",
+      "label": "radial_positions",
+      "has numerical value": 2.0,
       "has unit": {
         "@id": "unit:UNITLESS"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Length"
       }
     },
     {
-      "@id": "local:field_Radial0_1p0",
+      "@id": "local:field_radial_positions_2p0",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Radial0_1p0"
+        "@id": "local:variable_radial_positions_2p0"
       },
       "source": {
-        "@id": "local:source_Radial0_1p0"
+        "@id": "local:source_radial_positions_2p0"
       }
     },
     {
-      "@id": "local:source_Radial0_1p0",
+      "@id": "local:source_radial_positions_2p0",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Radial0"
+        "@id": "local:extract_radial_positions"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Angular1",
+      "@id": "local:extract_angular_positions",
       "@type": "cr:DataSource",
-      "jsonPath": "/Angular1"
+      "jsonPath": "/angular_positions"
     },
     {
-      "@id": "local:variable_Angular1_0p0",
-      "label": "Angular1",
-      "has numerical value": 0.0,
+      "@id": "local:variable_angular_positions_360p0",
+      "label": "angular_positions",
+      "has numerical value": 360.0,
       "has unit": {
-        "@id": "unit:UNITLESS"
+        "@id": "http://qudt.org/vocab/unitkind/Angle"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/Angle"
       }
     },
     {
-      "@id": "local:field_Angular1_0p0",
+      "@id": "local:field_angular_positions_360p0",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Angular1_0p0"
+        "@id": "local:variable_angular_positions_360p0"
       },
       "source": {
-        "@id": "local:source_Angular1_0p0"
+        "@id": "local:source_angular_positions_360p0"
       }
     },
     {
-      "@id": "local:source_Angular1_0p0",
+      "@id": "local:source_angular_positions_360p0",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Angular1"
+        "@id": "local:extract_angular_positions"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Name",
+      "@id": "local:extract_problem_name",
       "@type": "cr:DataSource",
-      "jsonPath": "/Name"
+      "jsonPath": "/problem_name"
     },
     {
-      "@id": "local:variable_Name_test_rotatingcylinders",
-      "label": "Name",
+      "@id": "local:variable_problem_name_test_rotatingcylinders",
+      "label": "problem_name",
       "has numerical value": "test_rotatingcylinders",
       "has unit": {
         "@id": "unit:UNITLESS"
       }
     },
     {
-      "@id": "local:field_Name_test_rotatingcylinders",
+      "@id": "local:field_problem_name_test_rotatingcylinders",
       "@type": "Field",
       "dataType": {
-        "@id": "schema:Float"
+        "@id": "schema:String"
       },
       "represents": {
-        "@id": "local:variable_Name_test_rotatingcylinders"
+        "@id": "local:variable_problem_name_test_rotatingcylinders"
       },
       "source": {
-        "@id": "local:source_Name_test_rotatingcylinders"
+        "@id": "local:source_problem_name_test_rotatingcylinders"
       }
     },
     {
-      "@id": "local:source_Name_test_rotatingcylinders",
+      "@id": "local:source_problem_name_test_rotatingcylinders",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Name"
+        "@id": "local:extract_problem_name"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Omega1",
+      "@id": "local:extract_angular_velocity_1",
       "@type": "cr:DataSource",
-      "jsonPath": "/Omega1"
+      "jsonPath": "/angular_velocity_1"
     },
     {
-      "@id": "local:variable_Omega1_100p0",
-      "label": "Omega1",
+      "@id": "local:variable_angular_velocity_1_100p0",
+      "label": "angular_velocity_1",
       "has numerical value": 100.0,
       "has unit": {
-        "@id": "unit:UNITLESS"
+        "@id": "http://qudt.org/vocab/unitkind/AngularVelocity"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
       }
     },
     {
-      "@id": "local:field_Omega1_100p0",
+      "@id": "local:field_angular_velocity_1_100p0",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Omega1_100p0"
+        "@id": "local:variable_angular_velocity_1_100p0"
       },
       "source": {
-        "@id": "local:source_Omega1_100p0"
+        "@id": "local:source_angular_velocity_1_100p0"
       }
     },
     {
-      "@id": "local:source_Omega1_100p0",
+      "@id": "local:source_angular_velocity_1_100p0",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Omega1"
+        "@id": "local:extract_angular_velocity_1"
       },
       "file object": {
         "@id": "local:parameter_file_object"
       }
     },
     {
-      "@id": "local:extract_Omega2",
+      "@id": "local:extract_angular_velocity_2",
       "@type": "cr:DataSource",
-      "jsonPath": "/Omega2"
+      "jsonPath": "/angular_velocity_2"
     },
     {
-      "@id": "local:variable_Omega2_0p0",
-      "label": "Omega2",
+      "@id": "local:variable_angular_velocity_2_0p0",
+      "label": "angular_velocity_2",
       "has numerical value": 0.0,
       "has unit": {
-        "@id": "unit:UNITLESS"
+        "@id": "http://qudt.org/vocab/unitkind/AngularVelocity"
+      },
+      "has quantity kind": {
+        "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
       }
     },
     {
-      "@id": "local:field_Omega2_0p0",
+      "@id": "local:field_angular_velocity_2_0p0",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Omega2_0p0"
+        "@id": "local:variable_angular_velocity_2_0p0"
       },
       "source": {
-        "@id": "local:source_Omega2_0p0"
+        "@id": "local:source_angular_velocity_2_0p0"
       }
     },
     {
-      "@id": "local:source_Omega2_0p0",
+      "@id": "local:source_angular_velocity_2_0p0",
       "@type": "cr:DataSource",
       "extract": {
-        "@id": "local:extract_Omega2"
+        "@id": "local:extract_angular_velocity_2"
       },
       "file object": {
         "@id": "local:parameter_file_object"
@@ -512,35 +530,35 @@
     {
       "@id": "local:configuration_rotatingcylinders",
       "@type": "m4i:ParameterSet",
-      "label": "rotatingcylinders",
+      "label": "80 cells radial, 320 cells axial",
       "identifier": "rotatingcylinders",
       "has part": [
         {
-          "@id": "local:variable_Cells0_80"
+          "@id": "local:variable_cells_radial_80"
         },
         {
-          "@id": "local:variable_Cells1_320"
+          "@id": "local:variable_cells_axial_320"
         },
         {
-          "@id": "local:variable_Grading0_1p1"
+          "@id": "local:variable_grid_grading_radial_m1p1"
         },
         {
-          "@id": "local:variable_Grading1_1p0"
+          "@id": "local:variable_grid_grading_axial_1p0"
         },
         {
-          "@id": "local:variable_Radial0_1p0"
+          "@id": "local:variable_radial_positions_2p0"
         },
         {
-          "@id": "local:variable_Angular1_0p0"
+          "@id": "local:variable_angular_positions_360p0"
         },
         {
-          "@id": "local:variable_Name_test_rotatingcylinders"
+          "@id": "local:variable_problem_name_test_rotatingcylinders"
         },
         {
-          "@id": "local:variable_Omega1_100p0"
+          "@id": "local:variable_angular_velocity_1_100p0"
         },
         {
-          "@id": "local:variable_Omega2_0p0"
+          "@id": "local:variable_angular_velocity_2_0p0"
         }
       ]
     },

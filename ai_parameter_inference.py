@@ -17,6 +17,8 @@ from __future__ import annotations
 
 import configparser
 import json
+import os
+import re
 import time
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -84,6 +86,31 @@ def discover_parameters(params_input: Path) -> list[ParameterCandidate]:
 
 
 # ============================================================
+# Default scenario-specific parameter selection
+# ============================================================
+
+#: INI sections (case-insensitive) that are scenario-specific by default,
+#: i.e. the parameters that typically differ between benchmark cases.
+DEFAULT_SCENARIO_SECTIONS: set[str] = {"domain", "grid", "problem"}
+
+
+def default_scenario_candidates(
+    candidates: list[ParameterCandidate],
+    sections: set[str] = DEFAULT_SCENARIO_SECTIONS,
+) -> list[ParameterCandidate]:
+    """Return the subset of candidates whose parent section is scenario-specific.
+
+    A parameter is treated as scenario-specific by default when its parent
+    INI section (matched case-insensitively) is one of `sections`, e.g.
+    [Domain], [Grid], or [Problem]. Falls back to *all* candidates if none
+    match, so callers never end up with an empty default selection.
+    """
+    wanted = {s.lower() for s in sections}
+    selected = [c for c in candidates if c.section.lower() in wanted]
+    return selected or list(candidates)
+
+
+# ============================================================
 # Pretty printing
 # ============================================================
 
@@ -133,7 +160,10 @@ For every parameter infer:
   - confidence
   - explanation
 
-Return ONLY valid JSON — no prose, no markdown fences.
+Respond with a raw JSON array only: the first character of your response must
+be '[' and the last character must be ']'. Do not wrap the JSON in markdown
+code fences (no ``` of any kind). Do not include any prose, explanation, or
+preamble before or after the JSON.
 """
 
 PROMPT_TEMPLATE = """\
@@ -174,7 +204,8 @@ Return JSON like:
   }}
 ]
 
-Return ONLY JSON.
+Return ONLY the raw JSON array. No markdown code fences, no explanation, no
+text before the opening '[' or after the closing ']'.
 """
 
 
@@ -230,12 +261,50 @@ def build_parameter_fields(metadata: list[dict]) -> dict:
 # OpenAI client
 # ============================================================
 
-def get_client() -> OpenAI:
+# ============================================================
+# LLM provider configuration
+# ============================================================
+
+#: Groq and OpenAI both expose an OpenAI-compatible /v1/chat/completions
+#: endpoint, so the same `openai` SDK works for either -- only the
+#: base_url, API key, and default model differ.
+PROVIDER_CONFIG: dict[str, dict[str, str]] = {
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1",
+        "api_key_env": "GROQ_API_KEY",
+        "default_model": "llama-3.3-70b-versatile",
+        "signup_url": "https://console.groq.com/keys",
+    },
+    "openai": {
+        "base_url": "https://api.openai.com/v1",
+        "api_key_env": "OPENAI_API_KEY",
+        "default_model": "gpt-4o",
+        "signup_url": "https://platform.openai.com/api-keys",
+    },
+}
+
+DEFAULT_PROVIDER = "groq"
+
+
+def get_client(provider: str = DEFAULT_PROVIDER) -> OpenAI:
     """
-    Create an OpenAI client.
-    Requires OPENAI_API_KEY to be set in the environment.
+    Create an OpenAI-compatible client for the given provider.
+
+    Requires the provider's API key env var to be set
+    (GROQ_API_KEY for Groq, OPENAI_API_KEY for OpenAI).
     """
-    return OpenAI()
+    if provider not in PROVIDER_CONFIG:
+        raise ValueError(f"Unknown provider '{provider}'. Choose from: {', '.join(PROVIDER_CONFIG)}")
+
+    config = PROVIDER_CONFIG[provider]
+    api_key = os.environ.get(config["api_key_env"])
+    if not api_key:
+        raise RuntimeError(
+            f"{config['api_key_env']} is not set in the environment. "
+            f"Get a free key at {config['signup_url']}."
+        )
+
+    return OpenAI(api_key=api_key, base_url=config["base_url"])
 
 
 # ============================================================
@@ -243,6 +312,39 @@ def get_client() -> OpenAI:
 # ============================================================
 
 REQUIRED_FIELDS = ("semantic_name", "ini", "datatype", "unit")
+
+
+def extract_json_array(raw: str) -> str:
+    """Recover a JSON array from an LLM response that may be wrapped in
+    markdown code fences or preceded/followed by stray prose.
+
+    Some models (notably smaller/open-weight ones on Groq) ignore
+    "no markdown fences" instructions and return things like:
+        ```json
+        [ ... ]
+        ```
+    or add a sentence before/after the array. This strips that wrapping
+    so json.loads() gets clean input.
+    """
+    text = raw.strip()
+
+    # Strip ```json ... ``` or ``` ... ``` fences.
+    if text.startswith("```"):
+        text = re.sub(r"^```[a-zA-Z]*\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+        text = text.strip()
+
+    if text.startswith("[") and text.endswith("]"):
+        return text
+
+    # Fall back to slicing out the first top-level array in the text,
+    # in case the model added a preamble or trailing remark.
+    start = text.find("[")
+    end = text.rfind("]")
+    if start != -1 and end != -1 and end > start:
+        return text[start:end + 1]
+
+    return text
 
 
 def validate_metadata(data: list[dict]) -> list[dict]:
@@ -280,28 +382,55 @@ def infer_parameter_metadata(
     main_cc: str,
     problem_hh: str,
     *,
-    model: str = "gpt-4o",
+    provider: str = DEFAULT_PROVIDER,
+    model: str | None = None,
     retries: int = 3,
     retry_delay: float = 2.0,
+    verbose: bool = False,
 ) -> list[dict]:
-    """Ask GPT to infer semantic metadata for all discovered parameters."""
-    client = get_client()
+    """Ask an LLM (Groq or OpenAI) to infer semantic metadata for all discovered parameters."""
+    client = get_client(provider)
+    resolved_model = model or PROVIDER_CONFIG[provider]["default_model"]
     prompt = build_prompt(candidates, main_cc, problem_hh)
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": prompt},
     ]
 
+    if verbose:
+        print(f"\n[{provider}] endpoint   : {PROVIDER_CONFIG[provider]['base_url']}")
+        print(f"[{provider}] model      : {resolved_model}")
+        print(f"[{provider}] prompt size: {len(prompt):,} chars, {len(candidates)} parameter(s)")
+
     last_error: Exception | None = None
 
     for attempt in range(1, retries + 1):
         try:
+            if verbose:
+                print(f"\n--- Request (attempt {attempt}/{retries}) ---")
+            start = time.monotonic()
             response = client.chat.completions.create(
-                model=model,
+                model=resolved_model,
                 messages=messages,
                 temperature=0,
             )
-            text = response.choices[0].message.content.strip()
+            elapsed = time.monotonic() - start
+            raw_text = response.choices[0].message.content.strip()
+
+            if verbose:
+                usage = getattr(response, "usage", None)
+                if usage is not None:
+                    print(
+                        f"--- Response (attempt {attempt}/{retries}, {elapsed:.2f}s, "
+                        f"prompt={usage.prompt_tokens} completion={usage.completion_tokens} "
+                        f"total={usage.total_tokens} tokens) ---"
+                    )
+                else:
+                    print(f"--- Response (attempt {attempt}/{retries}, {elapsed:.2f}s) ---")
+                print(raw_text)
+                print("--- end response ---\n")
+
+            text = extract_json_array(raw_text)
             data = json.loads(text)
             return validate_metadata(data)
 
@@ -327,7 +456,9 @@ def run_inference(
     params_input: Path,
     main_cc_path: Path | None = None,
     problem_hh_path: Path | None = None,
-    model: str = "gpt-4o",
+    provider: str = DEFAULT_PROVIDER,
+    model: str | None = None,
+    verbose: bool = False,
 ) -> list[dict]:
     """Parse input files, query the LLM, print and return inferred metadata."""
     candidates = discover_parameters(params_input)
@@ -337,7 +468,9 @@ def run_inference(
         candidates=candidates,
         main_cc=read_text(main_cc_path),
         problem_hh=read_text(problem_hh_path),
+        provider=provider,
         model=model,
+        verbose=verbose,
     )
 
     print_metadata(metadata)
