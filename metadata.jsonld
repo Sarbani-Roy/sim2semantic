@@ -130,11 +130,11 @@
       "description": "Test problem for the (Navier-) Stokes model in a 3D channel\n\nBenchmark case from\n  Turek, Schaefer et a (1996) Benchmark computations of laminar flow around cylinder.\n  Flow Simulation with High-Performance Computers II,\n  Notes on Numerical Fluid Mechanics 52, 547-566, Vieweg 1996\n  https://doi.org/10.1007/978-3-322-89849-4_39",
       "datePublished": "2026-07-17",
       "license": {
-        "@id": "https://creativecommons.org/licenses/by/4.0/"
+        "@id": "https://spdx.org/licenses/GPL-3.0-or-later.html"
       },
       "hasPart": [
         {
-          "@id": "local:bm-rotating-cylinders"
+          "@id": "local:bm-rotating_cylinders"
         },
         {
           "@id": "local:parameter_file_object"
@@ -142,18 +142,21 @@
         {
           "@id": "local:summary_file_object"
         }
-      ]
+      ],
+      "publisher": {
+        "@id": "local:publisher_DuMux_Project_contributors"
+      }
     },
     {
-      "@id": "local:bm-rotating-cylinders",
+      "@id": "local:bm-rotating_cylinders",
       "@type": "m4i:Benchmark",
       "label": "rotating cylinders",
       "dcterms:description": "Test problem for the (Navier-) Stokes model in a 3D channel\n\nBenchmark case from\n  Turek, Schaefer et a (1996) Benchmark computations of laminar flow around cylinder.\n  Flow Simulation with High-Performance Computers II,\n  Notes on Numerical Fluid Mechanics 52, 547-566, Vieweg 1996\n  https://doi.org/10.1007/978-3-322-89849-4_39",
       "investigates": {
-        "@id": "https://portal.mardi4nfdi.de/entity/Q6830614"
+        "@id": "local:investigates_rotating_cylinders"
       },
       "uses": {
-        "@id": "https://portal.mardi4nfdi.de/entity/Q6830614"
+        "@id": "local:investigates_rotating_cylinders"
       },
       "evaluates": [
         {
@@ -182,7 +185,7 @@
       "@id": "local:metric_l2_error_pressure_rel",
       "@type": "numerical variable",
       "label": "l2_error_pressure_rel",
-      "dcterms:description": "The metric is a relative error, so it is dimensionless. (inferred semantic name: relative_pressure_l2_error)",
+      "dcterms:description": "The metric name contains 'rel', indicating it is a relative or normalized quantity, thus it is dimensionless. (inferred semantic name: relative_pressure_l2_error)",
       "has unit": {
         "@id": "unit:UNITLESS"
       },
@@ -222,7 +225,7 @@
       "@id": "local:metric_l2_error_velocity_rel",
       "@type": "numerical variable",
       "label": "l2_error_velocity_rel",
-      "dcterms:description": "The metric is a relative error, so it is dimensionless. (inferred semantic name: relative_velocity_l2_error)",
+      "dcterms:description": "The metric name contains 'rel', indicating it is a relative or normalized quantity, thus it is dimensionless. (inferred semantic name: relative_velocity_l2_error)",
       "has unit": {
         "@id": "unit:UNITLESS"
       },
@@ -344,7 +347,7 @@
       "@id": "local:variable_Grid_Grading0_1p1",
       "@type": "numerical variable",
       "label": "Grid.Grading0",
-      "dcterms:description": "Grading0 is a grid parameter with two float values, likely representing the grading of the grid in the radial direction. (inferred semantic name: grid_grading_radial)",
+      "dcterms:description": "Grading0 is a grid parameter with two float values, likely representing the grading of the grid in the radial direction. (inferred semantic name: grading_radial)",
       "has numerical value": 1.1,
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -382,7 +385,7 @@
       "@id": "local:variable_Grid_Grading1_1p0",
       "@type": "numerical variable",
       "label": "Grid.Grading1",
-      "dcterms:description": "Grading1 is a grid parameter with a single float value, likely representing the grading of the grid in the axial direction. (inferred semantic name: grid_grading_axial)",
+      "dcterms:description": "Grading1 is a grid parameter with a single float value, likely representing the grading of the grid in the axial direction. (inferred semantic name: grading_axial)",
       "has numerical value": 1.0,
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -420,7 +423,7 @@
       "@id": "local:variable_Grid_Radial0_1p0",
       "@type": "numerical variable",
       "label": "Grid.Radial0",
-      "dcterms:description": "Radial0 is a grid parameter with multiple float values, assigned to variable 'radii' of type std::vector<Scalar>, likely representing the radii of the grid. (inferred semantic name: radii)",
+      "dcterms:description": "Radial0 is a grid parameter with three float values, assigned to variable `radii` of type `std::vector<Scalar>`, likely representing the radii of the grid. (inferred semantic name: radii)",
       "has numerical value": 1.0,
       "has unit": {
         "@id": "http://qudt.org/vocab/quantitykind/Length"
@@ -540,7 +543,7 @@
       "@id": "local:variable_Problem_Omega1_100p0",
       "@type": "numerical variable",
       "label": "Problem.Omega1",
-      "dcterms:description": "Omega1 is a problem parameter with a float value, assigned to variable 'omega1_' of type Scalar, likely representing the angular velocity of the first cylinder. (inferred semantic name: angular_velocity_1)",
+      "dcterms:description": "Omega1 is a problem parameter with a float value, assigned to variable `omega1_` of type `Scalar`, likely representing the angular velocity of the first cylinder. (inferred semantic name: angular_velocity_1)",
       "has numerical value": 100.0,
       "has unit": {
         "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
@@ -581,7 +584,7 @@
       "@id": "local:variable_Problem_Omega2_0p0",
       "@type": "numerical variable",
       "label": "Problem.Omega2",
-      "dcterms:description": "Omega2 is a problem parameter with a float value, assigned to variable 'omega2_' of type Scalar, likely representing the angular velocity of the second cylinder. (inferred semantic name: angular_velocity_2)",
+      "dcterms:description": "Omega2 is a problem parameter with a float value, assigned to variable `omega2_` of type `Scalar`, likely representing the angular velocity of the second cylinder. (inferred semantic name: angular_velocity_2)",
       "has numerical value": 0.0,
       "has unit": {
         "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
@@ -731,14 +734,14 @@
       ]
     },
     {
-      "@id": "https://portal.mardi4nfdi.de/entity/Q6830614",
+      "@id": "local:investigates_rotating_cylinders",
       "@type": "mathmod:ResearchProblem",
-      "label": "Taylor\u2013Couette flow"
+      "label": "rotating cylinders"
     },
     {
       "@id": "local:publication",
       "@type": "mathmod:Publication",
-      "label": "Publication"
+      "label": "Test problem for the (Navier-) Stokes model in a 3D channel Benchmark case from Turek, Schaefer et a (1996) Benchmark computations of laminar flow around cylinder. Flow Simulation with High-Performance Computers II, Notes on Numerical Fluid Mechanics 52, 547-566, Vieweg 1996"
     },
     {
       "@id": "local:software",
@@ -756,9 +759,14 @@
       "label": "solution_metrics.json"
     },
     {
-      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@id": "local:publisher_DuMux_Project_contributors",
+      "@type": "schema:Organization",
+      "name": "DuMux Project contributors"
+    },
+    {
+      "@id": "https://spdx.org/licenses/GPL-3.0-or-later.html",
       "@type": "schema:CreativeWork",
-      "name": "CC BY 4.0"
+      "name": "GPL-3.0-or-later"
     }
   ]
 }

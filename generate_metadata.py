@@ -105,26 +105,137 @@ DEFAULT_CONTEXT = {
 KNOWN_METRIC_UNITS: dict[str, dict[str, Any]] = {}
 DEFAULT_METRIC_UNIT: dict[str, Any] = {"unit": "unit:UNITLESS", "quantityKind": None}
 
-DEFAULT_MANIFEST: dict[str, Any] = {
-    "label": "rotating cylinders",
+#: Absolute fallbacks for fields we truly cannot derive from source (no
+#: version-control tag, no "investigates" ontology mapping available from
+#: code alone, etc). Everything else in the manifest is scraped from
+#: problem.hh/main.cc by build_manifest() below.
+MANIFEST_FALLBACKS: dict[str, Any] = {
     "version": "1.0.0",
-    "investigates_qid": "https://portal.mardi4nfdi.de/entity/Q6830614",
-    "investigates_label": "Taylor\u2013Couette flow",
-    "software_label": "DuMux",
+    "label": "benchmark",
+    "software_label": "simulation software",
     "publication_label": "Publication",
-    # RO-Crate Root Data Entity fields (see GraphBuilder.add_rocrate_root()).
-    # description/date_published fall back to sensible defaults if omitted;
-    # author/publisher are left unset by default since they're only
-    # RECOMMENDED (not REQUIRED) by the RO-Crate 1.1 profile -- fill them in
-    # your benchmark_manifest.json if you want a fully "recommended" crate.
-    "root_description": None,
     "license_url": "https://creativecommons.org/licenses/by/4.0/",
     "license_label": "CC BY 4.0",
-    "date_published": None,
-    "author_name": None,
-    "author_id": None,
-    "publisher_name": None,
 }
+
+SPDX_LICENSE_PATTERN = re.compile(r"SPDX-License-Identifier:\s*([^\s*]+)")
+SPDX_COPYRIGHT_PATTERN = re.compile(r"SPDX-FileCopyrightText:\s*(?:Copyright\s*(?:©|\(c\))?\s*)?([^\n*]+)")
+CLASS_NAME_PATTERN = re.compile(r"\bclass\s+([A-Z]\w+)\s*(?::\s*public|\{)")
+SOFTWARE_SIGNATURES: list[tuple[re.Pattern, str]] = [
+    (re.compile(r"#include\s*<dumux/", re.IGNORECASE), "DuMux"),
+    (re.compile(r"\bnamespace\s+Dumux\b"), "DuMux"),
+    (re.compile(r"OpenFOAM", re.IGNORECASE), "OpenFOAM"),
+    (re.compile(r"#include\s*<deal\.II/", re.IGNORECASE), "deal.II"),
+    (re.compile(r"\bFEniCS\b", re.IGNORECASE), "FEniCS"),
+    (re.compile(r"#include\s*<dune/", re.IGNORECASE), "DUNE"),
+]
+
+
+def _camel_to_label(name: str) -> str:
+    """'RotatingCylinders' -> 'rotating cylinders'."""
+    spaced = re.sub(r"(?<!^)(?=[A-Z])", " ", name)
+    return spaced.strip().lower()
+
+
+def extract_spdx_info(*source_texts: str) -> dict[str, str | None]:
+    """Scan for SPDX-License-Identifier / SPDX-FileCopyrightText header
+    comments (standard in DuMux/DUNE source files) and turn them into
+    RO-Crate license/publisher fields. Returns {} entries as None if not
+    found in any of the given texts.
+    """
+    info: dict[str, str | None] = {"license_id": None, "copyright": None}
+    for text in source_texts:
+        if not text:
+            continue
+        if info["license_id"] is None:
+            m = SPDX_LICENSE_PATTERN.search(text)
+            if m:
+                info["license_id"] = m.group(1).strip()
+        if info["copyright"] is None:
+            m = SPDX_COPYRIGHT_PATTERN.search(text)
+            if m:
+                copyright_text = m.group(1).strip().rstrip(".")
+                # Trim common trailing pointer clauses, e.g. "..., see
+                # AUTHORS.md in root folder" -> "..." -- we want just the
+                # copyright holder name, not the whole sentence.
+                copyright_text = re.split(r",?\s+see\s+\S+", copyright_text, maxsplit=1)[0].strip()
+                info["copyright"] = copyright_text
+    return info
+
+
+def detect_software_label(*source_texts: str) -> str | None:
+    for text in source_texts:
+        if not text:
+            continue
+        for pattern, label in SOFTWARE_SIGNATURES:
+            if pattern.search(text):
+                return label
+    return None
+
+
+def extract_class_label(*source_texts: str) -> str | None:
+    for text in source_texts:
+        if not text:
+            continue
+        m = CLASS_NAME_PATTERN.search(text)
+        if m:
+            return _camel_to_label(m.group(1))
+    return None
+
+
+def extract_publication_citation(benchmark_description: str) -> str | None:
+    """Pull the citation block out of a doc-comment like:
+    "\\brief ...\n\nBenchmark case from\n  Turek, Schaefer et al (1996) ...\n  https://doi.org/..."
+    Returns the citation text (without the doi URL line) if a
+    year-in-parens pattern is found, signaling an actual reference rather
+    than just descriptive prose.
+    """
+    if not benchmark_description:
+        return None
+    lines = [ln.strip() for ln in benchmark_description.splitlines() if ln.strip()]
+    citation_lines = [ln for ln in lines if not ln.startswith("\\") and "doi.org" not in ln.lower()]
+    citation = " ".join(citation_lines).strip()
+    if citation and re.search(r"\(\d{4}\)", citation):
+        return citation
+    return None
+
+
+def build_manifest(problem_hh_text: str, main_cc_text: str, benchmark_description: str) -> dict[str, Any]:
+    """Derive the RO-Crate manifest (crate label, license, software, etc.)
+    from problem.hh/main.cc instead of a hardcoded DEFAULT_MANIFEST or an
+    external --manifest file. Falls back to MANIFEST_FALLBACKS for anything
+    that genuinely isn't recoverable from source (e.g. a version number, or
+    a formal "investigates" ontology/QID mapping).
+    """
+    spdx = extract_spdx_info(problem_hh_text, main_cc_text)
+    class_label = extract_class_label(problem_hh_text, main_cc_text)
+    citation = extract_publication_citation(benchmark_description)
+
+    manifest: dict[str, Any] = {
+        "label": class_label or MANIFEST_FALLBACKS["label"],
+        "version": MANIFEST_FALLBACKS["version"],
+        # No source-derivable mapping to a formal ontology/QID for the
+        # physical phenomenon under study -- GraphBuilder falls back to a
+        # local id built from investigates_label when this is None.
+        "investigates_qid": None,
+        "investigates_label": class_label or MANIFEST_FALLBACKS["label"],
+        "software_label": detect_software_label(problem_hh_text, main_cc_text) or MANIFEST_FALLBACKS["software_label"],
+        "publication_label": citation or MANIFEST_FALLBACKS["publication_label"],
+        "root_description": benchmark_description or None,
+        "date_published": None,
+        "author_name": None,
+        "author_id": None,
+        "publisher_name": spdx["copyright"],
+    }
+
+    if spdx["license_id"]:
+        manifest["license_url"] = f"https://spdx.org/licenses/{spdx['license_id']}.html"
+        manifest["license_label"] = spdx["license_id"]
+    else:
+        manifest["license_url"] = MANIFEST_FALLBACKS["license_url"]
+        manifest["license_label"] = MANIFEST_FALLBACKS["license_label"]
+
+    return manifest
 
 
 # =============================================================================
@@ -199,6 +310,11 @@ class GraphBuilder:
         #: problem.hh/main.cc -- see extract_benchmark_description(). Used as
         #: a human-readable description on the top-level benchmark node.
         self.benchmark_description = benchmark_description
+        #: Graph id for the benchmark node -- derived from the manifest
+        #: label (itself scraped from problem.hh's class name) rather than
+        #: hardcoded, so this stays correct for any benchmark, not just
+        #: rotating-cylinders.
+        self.benchmark_id = f"local:bm-{slugify(manifest.get('label', 'benchmark'))}"
         self.graph: list[dict[str, Any]] = []
         self._param_value_nodes: dict[tuple[str, Any], str] = {}
         self._extract_nodes: set[str] = set()
@@ -332,20 +448,24 @@ class GraphBuilder:
 
     def add_benchmark_node(self, config_ids: list[str], metric_ids: list[str]) -> None:
         m = self.manifest
+        # No source-derivable mapping to a formal ontology/QID for the
+        # physical phenomenon under study, so fall back to a local id built
+        # from investigates_label (see build_manifest()).
+        investigates_id = m.get("investigates_qid") or f"local:investigates_{slugify(m['investigates_label'])}"
         self.graph.insert(0, {
-            "@id": "local:bm-rotating-cylinders",
+            "@id": self.benchmark_id,
             "@type": "m4i:Benchmark",
             "label": m["label"],
             **({"dcterms:description": self.benchmark_description} if self.benchmark_description else {}),
-            "investigates": {"@id": m["investigates_qid"]},
-            "uses": {"@id": m["investigates_qid"]},
+            "investigates": {"@id": investigates_id},
+            "uses": {"@id": investigates_id},
             "evaluates": [{"@id": i} for i in metric_ids],
             "has parameter set": [{"@id": c} for c in config_ids],
             "describedAsDocumentedBy": {"@id": "local:publication"},
             "schema:version": m["version"],
         })
         self.graph.append({
-            "@id": m["investigates_qid"],
+            "@id": investigates_id,
             "@type": "mathmod:ResearchProblem",
             "label": m["investigates_label"],
         })
@@ -386,7 +506,7 @@ class GraphBuilder:
             "datePublished": m.get("date_published") or _dt.date.today().isoformat(),
             "license": {"@id": license_id},
             "hasPart": [
-                {"@id": "local:bm-rotating-cylinders"},
+                {"@id": self.benchmark_id},
                 {"@id": "local:parameter_file_object"},
                 {"@id": "local:summary_file_object"},
             ],
@@ -417,21 +537,6 @@ class GraphBuilder:
 # =============================================================================
 # 4. Case discovery & Resolution
 # =============================================================================
-
-def load_manifest(path: Path | None) -> dict[str, Any]:
-    manifest = dict(DEFAULT_MANIFEST)
-    if path is None:
-        return manifest
-    text = path.read_text(encoding="utf-8")
-    if path.suffix in (".yaml", ".yml"):
-        try:
-            import yaml  # type: ignore
-        except ImportError:
-            sys.exit("PyYAML not installed; use a .json manifest or `pip install pyyaml`")
-        manifest.update(yaml.safe_load(text) or {})
-    else:
-        manifest.update(json.loads(text))
-    return manifest
 
 
 def resolve_case_params(case_dir: Path, parameter_fields: dict[str, Any]) -> dict[str, Any]:
@@ -533,15 +638,26 @@ def validate_rocrate(doc: dict[str, Any], severity: str = "REQUIRED") -> bool:
     )
 
     threshold = getattr(models.Severity, severity)
-    relevant_issues = [issue for issue in result.get_issues() if issue.severity >= threshold]
+    all_issues = result.get_issues()
     passed_at_threshold = result.passed(min_severity=threshold)
 
     if passed_at_threshold:
         print(f"RO-Crate validation PASSED at severity >= {severity}.")
     else:
-        print(f"RO-Crate validation FAILED at severity >= {severity} -- {len(relevant_issues)} issue(s):", file=sys.stderr)
-    for issue in relevant_issues:
-        print(f"  [{issue.severity.name}] {issue.message}", file=sys.stderr)
+        print(f"RO-Crate validation FAILED at severity >= {severity}.")
+
+    if all_issues:
+        print(f"\nFailing checks ({len(all_issues)} of {checks['count']} total -- this is the gap behind the "
+              f"{100 - completeness:.1f}% incomplete):")
+        for issue in all_issues:
+            blocking = " [BLOCKS PASS]" if issue.severity >= threshold else ""
+            print(f"  [{issue.severity.name}]{blocking} {issue.check.identifier}: {issue.message}", file=sys.stderr)
+            if issue.violatingEntity:
+                print(f"      entity: {issue.violatingEntity}"
+                      + (f"  property: {issue.violatingProperty}" if issue.violatingProperty else ""),
+                      file=sys.stderr)
+    else:
+        print("No issues at any severity -- crate is 100% complete against this profile.")
 
     return passed_at_threshold
 
@@ -571,7 +687,6 @@ def main() -> None:
                      help="Path to the module folder containing both params.input file(s) and main.cc.")
     ap.add_argument("--main-cc", type=Path, default=None, dest="main_cc",
                      help="Explicit path to main.cc, only needed if module_dir contains more than one.")
-    ap.add_argument("--manifest", type=Path, default=None, help="Optional benchmark_manifest.(yaml|json)")
     ap.add_argument("--output", type=Path, default=Path("metadata.jsonld"))
     ap.add_argument("--scenario-params", type=str, default=None,
                      help="Comma-separated list of raw parameter keys (e.g., 'Cells0,Cells1') that are scenario-specific. "
@@ -902,7 +1017,7 @@ def main() -> None:
     filtered_metric_fields = build_metric_fields(final_metric_metadata)
 
     # 5. Process Cases & Build Graph
-    manifest = load_manifest(args.manifest)
+    manifest = build_manifest(read_text(problem_hh_path), read_text(main_cc_path), benchmark_description)
     cases = discover_cases(args.module_dir)
 
     builder = GraphBuilder(manifest, filtered_parameter_fields, filtered_metric_fields, benchmark_description)
