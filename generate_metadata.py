@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import configparser
+import datetime as _dt
 import json
 import re
 import sys
@@ -47,11 +48,18 @@ DEFAULT_CONTEXT = {
     "@vocab": "http://w3id.org/nfdi4ing/metadata4ing#",
     "dcterms": "http://purl.org/dc/terms/",
     "dcat": "http://www.w3.org/ns/dcat#",
-    "schema": "https://schema.org/",
+    # NOTE: must be "http://" (not "https://") -- the RO-Crate 1.1 profile's
+    # SHACL shapes hard-code sh:hasValue schema_org:CreativeWork /
+    # schema_org:Dataset using the http scheme, and RDF term equality is a
+    # strict string match, so https://schema.org/... would silently fail
+    # every RO-Crate root-entity check even though it's "the same" URI to a
+    # human.
+    "schema": "http://schema.org/",
     "cr": "http://mlcommons.org/croissant/",
     "qudt": "http://qudt.org/schema/qudt/",
     "m4i": "http://w3id.org/nfdi4ing/metadata4ing#",
     "mathmod": "https://mardi4nfdi.de/mathmoddb#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "label": {"@id": "rdfs:label"},
     "Field": {"@id": "cr:Field"},
     "file object": {"@id": "cr:FileObject"},
@@ -76,6 +84,18 @@ DEFAULT_CONTEXT = {
     "jsonPath": {"@id": "cr:jsonPath"},
     "source": {"@id": "cr:source"},
     "represents": {"@id": "sio:SIO_000210"},
+    # RO-Crate root-entity / file-descriptor terms.
+    "identifier": {"@id": "schema:identifier"},
+    "dataType": {"@id": "cr:dataType"},
+    "name": {"@id": "schema:name"},
+    "description": {"@id": "schema:description"},
+    "datePublished": {"@id": "schema:datePublished"},
+    "license": {"@id": "schema:license"},
+    "hasPart": {"@id": "schema:hasPart"},
+    "about": {"@id": "schema:about"},
+    "conformsTo": {"@id": "dcterms:conformsTo"},
+    "author": {"@id": "schema:author"},
+    "publisher": {"@id": "schema:publisher"},
 }
 
 #: Optional manual overrides. Metric units/quantityKinds are inferred by the
@@ -92,6 +112,18 @@ DEFAULT_MANIFEST: dict[str, Any] = {
     "investigates_label": "Taylor\u2013Couette flow",
     "software_label": "DuMux",
     "publication_label": "Publication",
+    # RO-Crate Root Data Entity fields (see GraphBuilder.add_rocrate_root()).
+    # description/date_published fall back to sensible defaults if omitted;
+    # author/publisher are left unset by default since they're only
+    # RECOMMENDED (not REQUIRED) by the RO-Crate 1.1 profile -- fill them in
+    # your benchmark_manifest.json if you want a fully "recommended" crate.
+    "root_description": None,
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "license_label": "CC BY 4.0",
+    "date_published": None,
+    "author_name": None,
+    "author_id": None,
+    "publisher_name": None,
 }
 
 
@@ -208,6 +240,7 @@ class GraphBuilder:
 
         var_node = {
             "@id": var_id,
+            "@type": "numerical variable",
             "label": raw_label,
             "dcterms:description": description,
             "has numerical value": value,
@@ -333,6 +366,53 @@ class GraphBuilder:
             "label": "solution_metrics.json",
         })
 
+    def add_rocrate_root(self) -> None:
+        """Add the RO-Crate 1.1 Metadata File Descriptor and Root Data
+        Entity so this graph is a *bona fide* RO-Crate, not just a bag of
+        metadata4ing/Croissant nodes -- see
+        https://www.researchobject.org/ro-crate/1.1/root-data-entity.html.
+        Call this last, after add_benchmark_node(), so it can reference the
+        benchmark and file-object entities that already exist in the graph.
+        """
+        m = self.manifest
+        root_id = "./"
+        license_id = m.get("license_url") or "local:license"
+
+        root_entity: dict[str, Any] = {
+            "@id": root_id,
+            "@type": "schema:Dataset",
+            "name": m["label"],
+            "description": m.get("root_description") or self.benchmark_description or m["label"],
+            "datePublished": m.get("date_published") or _dt.date.today().isoformat(),
+            "license": {"@id": license_id},
+            "hasPart": [
+                {"@id": "local:bm-rotating-cylinders"},
+                {"@id": "local:parameter_file_object"},
+                {"@id": "local:summary_file_object"},
+            ],
+        }
+        if m.get("author_name"):
+            author_id = m.get("author_id") or f"local:author_{slugify(m['author_name'])}"
+            root_entity["author"] = {"@id": author_id}
+            self.graph.append({"@id": author_id, "@type": "schema:Person", "name": m["author_name"]})
+        if m.get("publisher_name"):
+            publisher_id = f"local:publisher_{slugify(m['publisher_name'])}"
+            root_entity["publisher"] = {"@id": publisher_id}
+            self.graph.append({"@id": publisher_id, "@type": "schema:Organization", "name": m["publisher_name"]})
+
+        self.graph.insert(0, root_entity)
+        self.graph.insert(0, {
+            "@id": "ro-crate-metadata.json",
+            "@type": "schema:CreativeWork",
+            "conformsTo": {"@id": "https://w3id.org/ro/crate/1.1"},
+            "about": {"@id": root_id},
+        })
+        self.graph.append({
+            "@id": license_id,
+            "@type": "schema:CreativeWork",
+            "name": m.get("license_label") or license_id,
+        })
+
 
 # =============================================================================
 # 4. Case discovery & Resolution
@@ -391,6 +471,56 @@ def discover_cases(root: Path) -> list[tuple[Path, str]]:
     return cases
 
 
+# =============================================================================
+# 4b. RO-Crate conformance check
+#
+# Runs the generated graph through the official RO-Crate profile (SHACL
+# shapes maintained by the RO-Crate community, via the `rocrate_validator`
+# package -- `pip install roc-validator`). This is a real structural check,
+# not just "does it parse as JSON-LD": it confirms the crate has a proper
+# Metadata File Descriptor, a Root Data Entity with the required properties
+# (license, etc.), and that every entity is well-typed -- see
+# GraphBuilder.add_rocrate_root() for what makes that true in this graph.
+# =============================================================================
+
+def validate_rocrate(doc: dict[str, Any], severity: str = "REQUIRED") -> bool:
+    """Validate `doc` (the full {"@context", "@graph"} document) against the
+    RO-Crate 1.1 profile. Prints a pass/fail summary and any issues found.
+    Returns True if validation passed (or the validator isn't installed --
+    this check is informational and never aborts metadata generation).
+    """
+    try:
+        from rocrate_validator import services
+        from rocrate_validator.models.settings import ValidationSettings
+    except ImportError:
+        print(
+            "\nSkipping RO-Crate validation: the 'rocrate_validator' package "
+            "isn't installed. Run `pip install roc-validator` to enable "
+            "`--validate` (https://github.com/crs4/rocrate-validator).",
+            file=sys.stderr,
+        )
+        return True
+
+    print(f"\nValidating RO-Crate against profile 'ro-crate-1.1' (severity >= {severity})...")
+    settings = ValidationSettings(
+        profile_identifier="ro-crate-1.1",
+        metadata_only=True,
+        metadata_dict=doc,
+        requirement_severity=severity,
+    )
+    result = services.validate_metadata_as_dict(doc, settings)
+
+    issues = result.get_issues()
+    if result.passed():
+        print(f"RO-Crate validation PASSED ({len(issues)} lower-severity note(s)).")
+    else:
+        print(f"RO-Crate validation FAILED -- {len(issues)} issue(s):", file=sys.stderr)
+    for issue in issues:
+        print(f"  [{issue.severity.name}] {issue.message}", file=sys.stderr)
+
+    return result.passed()
+
+
 def find_main_cc(module_dir: Path, override: Path | None) -> Path:
     if override is not None:
         if not override.exists():
@@ -441,6 +571,16 @@ def main() -> None:
                           "Without this flag, stale cache entries that no longer correspond to a "
                           "real params.input key or main.cc metric are pruned automatically, but "
                           "still-valid cached entries are reused as normal.")
+    ap.add_argument("--skip-validation", action="store_true",
+                     help="Skip the automatic RO-Crate 1.1 conformance check that normally runs "
+                          "after writing the output (via the 'rocrate_validator' package -- "
+                          "`pip install roc-validator`). Use this if the package isn't installed "
+                          "or you don't have network access for it to fetch the profile.")
+    ap.add_argument("--validate-severity", type=str, default="REQUIRED",
+                     choices=["OPTIONAL", "RECOMMENDED", "REQUIRED"],
+                     help="Minimum issue severity to check/report for the RO-Crate conformance "
+                          "check (default: REQUIRED, i.e. only what the RO-Crate spec mandates -- "
+                          "pass RECOMMENDED or OPTIONAL for stricter best-practice checks).")
     args = ap.parse_args()
 
     if not args.module_dir.is_dir():
@@ -755,10 +895,19 @@ def main() -> None:
         config_ids.append(builder.add_configuration(case_id, label, params))
 
     builder.add_benchmark_node(config_ids, metric_ids)
+    builder.add_rocrate_root()
 
     doc = {"@context": DEFAULT_CONTEXT, "@graph": builder.graph}
     args.output.write_text(json.dumps(doc, indent=2), encoding="utf-8")
     print(f"Wrote {args.output} ({len(builder.graph)} graph nodes, {len(cases)} cases)")
+
+    # 6. RO-Crate conformance check -- runs by default so every generated
+    #    crate is checked against the official ro-crate-1.1 SHACL profile
+    #    before you hand it off. Informational only: never changes the exit
+    #    code or touches the file already written above. Skip with
+    #    --skip-validation if 'roc-validator' isn't installed / no network.
+    if not args.skip_validation:
+        validate_rocrate(doc, severity=args.validate_severity)
 
 
 if __name__ == "__main__":

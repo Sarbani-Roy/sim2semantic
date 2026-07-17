@@ -4,11 +4,12 @@
     "@vocab": "http://w3id.org/nfdi4ing/metadata4ing#",
     "dcterms": "http://purl.org/dc/terms/",
     "dcat": "http://www.w3.org/ns/dcat#",
-    "schema": "https://schema.org/",
+    "schema": "http://schema.org/",
     "cr": "http://mlcommons.org/croissant/",
     "qudt": "http://qudt.org/schema/qudt/",
     "m4i": "http://w3id.org/nfdi4ing/metadata4ing#",
     "mathmod": "https://mardi4nfdi.de/mathmoddb#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "label": {
       "@id": "rdfs:label"
     },
@@ -76,9 +77,73 @@
     },
     "represents": {
       "@id": "sio:SIO_000210"
+    },
+    "identifier": {
+      "@id": "schema:identifier"
+    },
+    "dataType": {
+      "@id": "cr:dataType"
+    },
+    "name": {
+      "@id": "schema:name"
+    },
+    "description": {
+      "@id": "schema:description"
+    },
+    "datePublished": {
+      "@id": "schema:datePublished"
+    },
+    "license": {
+      "@id": "schema:license"
+    },
+    "hasPart": {
+      "@id": "schema:hasPart"
+    },
+    "about": {
+      "@id": "schema:about"
+    },
+    "conformsTo": {
+      "@id": "dcterms:conformsTo"
+    },
+    "author": {
+      "@id": "schema:author"
+    },
+    "publisher": {
+      "@id": "schema:publisher"
     }
   },
   "@graph": [
+    {
+      "@id": "ro-crate-metadata.json",
+      "@type": "schema:CreativeWork",
+      "conformsTo": {
+        "@id": "https://w3id.org/ro/crate/1.1"
+      },
+      "about": {
+        "@id": "./"
+      }
+    },
+    {
+      "@id": "./",
+      "@type": "schema:Dataset",
+      "name": "rotating cylinders",
+      "description": "Test problem for the (Navier-) Stokes model in a 3D channel\n\nBenchmark case from\n  Turek, Schaefer et a (1996) Benchmark computations of laminar flow around cylinder.\n  Flow Simulation with High-Performance Computers II,\n  Notes on Numerical Fluid Mechanics 52, 547-566, Vieweg 1996\n  https://doi.org/10.1007/978-3-322-89849-4_39",
+      "datePublished": "2026-07-17",
+      "license": {
+        "@id": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "hasPart": [
+        {
+          "@id": "local:bm-rotating-cylinders"
+        },
+        {
+          "@id": "local:parameter_file_object"
+        },
+        {
+          "@id": "local:summary_file_object"
+        }
+      ]
+    },
     {
       "@id": "local:bm-rotating-cylinders",
       "@type": "m4i:Benchmark",
@@ -195,6 +260,7 @@
     },
     {
       "@id": "local:variable_Grid_Cells0_80",
+      "@type": "numerical variable",
       "label": "Grid.Cells0",
       "dcterms:description": "Cells0 is a parameter in the Grid section, which likely represents the number of cells in the radial direction. (inferred semantic name: cells_radial)",
       "has numerical value": 80,
@@ -235,6 +301,7 @@
     },
     {
       "@id": "local:variable_Grid_Cells1_320",
+      "@type": "numerical variable",
       "label": "Grid.Cells1",
       "dcterms:description": "Cells1 is a parameter in the Grid section, which likely represents the number of cells in the axial direction. (inferred semantic name: cells_axial)",
       "has numerical value": 320,
@@ -275,6 +342,7 @@
     },
     {
       "@id": "local:variable_Grid_Grading0_m1p1",
+      "@type": "numerical variable",
       "label": "Grid.Grading0",
       "dcterms:description": "Grading0 is a parameter in the Grid section, which likely represents the grading of the grid in the radial direction. (inferred semantic name: grid_grading_radial)",
       "has numerical value": -1.1,
@@ -312,6 +380,7 @@
     },
     {
       "@id": "local:variable_Grid_Grading1_1p0",
+      "@type": "numerical variable",
       "label": "Grid.Grading1",
       "dcterms:description": "Grading1 is a parameter in the Grid section, which likely represents the grading of the grid in the axial direction. (inferred semantic name: grid_grading_axial)",
       "has numerical value": 1.0,
@@ -349,6 +418,7 @@
     },
     {
       "@id": "local:variable_Grid_Radial0_1p0",
+      "@type": "numerical variable",
       "label": "Grid.Radial0",
       "dcterms:description": "Radial distance of the first grid point from the center of the cylinder (inferred semantic name: Radial0)",
       "has numerical value": 1.0,
@@ -389,6 +459,7 @@
     },
     {
       "@id": "local:variable_Grid_Angular1_360p0",
+      "@type": "numerical variable",
       "label": "Grid.Angular1",
       "dcterms:description": "Angular1 is a parameter in the Grid section, which likely represents the angular positions of the grid. (inferred semantic name: angular_positions)",
       "has numerical value": 360.0,
@@ -429,6 +500,7 @@
     },
     {
       "@id": "local:variable_Problem_Name_test_rotatingcylinders",
+      "@type": "numerical variable",
       "label": "Problem.Name",
       "dcterms:description": "Name of the problem being simulated (inferred semantic name: ProblemName)",
       "has numerical value": "test_rotatingcylinders",
@@ -466,6 +538,7 @@
     },
     {
       "@id": "local:variable_Problem_Omega1_100p0",
+      "@type": "numerical variable",
       "label": "Problem.Omega1",
       "dcterms:description": "Angular velocity of the first cylinder in the simulation (inferred semantic name: Omega1)",
       "has numerical value": 100.0,
@@ -506,6 +579,7 @@
     },
     {
       "@id": "local:variable_Problem_Omega2_0p0",
+      "@type": "numerical variable",
       "label": "Problem.Omega2",
       "dcterms:description": "Angular velocity of the second cylinder in the simulation (inferred semantic name: Omega2)",
       "has numerical value": 0.0,
@@ -546,6 +620,7 @@
     },
     {
       "@id": "local:variable_Problem_EnableGravity_false",
+      "@type": "numerical variable",
       "label": "Problem.EnableGravity",
       "dcterms:description": "Boolean parameter indicating whether gravity is enabled. (inferred semantic name: EnableGravity)",
       "has numerical value": "false",
@@ -583,6 +658,7 @@
     },
     {
       "@id": "local:variable_Problem_EnableInertiaTerms_true",
+      "@type": "numerical variable",
       "label": "Problem.EnableInertiaTerms",
       "dcterms:description": "Boolean parameter indicating whether inertia terms are enabled. (inferred semantic name: EnableInertiaTerms)",
       "has numerical value": "true",
@@ -678,6 +754,11 @@
       "@id": "local:summary_file_object",
       "@type": "cr:FileObject",
       "label": "solution_metrics.json"
+    },
+    {
+      "@id": "https://creativecommons.org/licenses/by/4.0/",
+      "@type": "schema:CreativeWork",
+      "name": "CC BY 4.0"
     }
   ]
 }
