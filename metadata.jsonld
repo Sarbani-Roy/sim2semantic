@@ -182,7 +182,7 @@
       "@id": "local:metric_l2_error_pressure_rel",
       "@type": "numerical variable",
       "label": "l2_error_pressure_rel",
-      "dcterms:description": "Relative L2 error of pressure, calculated as the L2 norm of the difference between simulated and analytical pressure values, normalized by the L2 norm of the analytical pressure values. (inferred semantic name: relative_pressure_error)",
+      "dcterms:description": "The metric is a relative error, so it is dimensionless. (inferred semantic name: relative_pressure_l2_error)",
       "has unit": {
         "@id": "unit:UNITLESS"
       },
@@ -222,7 +222,7 @@
       "@id": "local:metric_l2_error_velocity_rel",
       "@type": "numerical variable",
       "label": "l2_error_velocity_rel",
-      "dcterms:description": "Relative L2 error of velocity, calculated as the L2 norm of the difference between simulated and analytical velocity values, normalized by the L2 norm of the analytical velocity values. (inferred semantic name: relative_velocity_error)",
+      "dcterms:description": "The metric is a relative error, so it is dimensionless. (inferred semantic name: relative_velocity_l2_error)",
       "has unit": {
         "@id": "unit:UNITLESS"
       },
@@ -262,7 +262,7 @@
       "@id": "local:variable_Grid_Cells0_80",
       "@type": "numerical variable",
       "label": "Grid.Cells0",
-      "dcterms:description": "Cells0 is a parameter in the Grid section, which likely represents the number of cells in the radial direction. (inferred semantic name: cells_radial)",
+      "dcterms:description": "Cells0 is a grid parameter with two integer values, likely representing the number of cells in the radial direction. (inferred semantic name: cells_radial)",
       "has numerical value": 80,
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -303,7 +303,7 @@
       "@id": "local:variable_Grid_Cells1_320",
       "@type": "numerical variable",
       "label": "Grid.Cells1",
-      "dcterms:description": "Cells1 is a parameter in the Grid section, which likely represents the number of cells in the axial direction. (inferred semantic name: cells_axial)",
+      "dcterms:description": "Cells1 is a grid parameter with a single integer value, likely representing the number of cells in the axial direction. (inferred semantic name: cells_axial)",
       "has numerical value": 320,
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -341,30 +341,30 @@
       "jsonPath": "/Grading0"
     },
     {
-      "@id": "local:variable_Grid_Grading0_m1p1",
+      "@id": "local:variable_Grid_Grading0_1p1",
       "@type": "numerical variable",
       "label": "Grid.Grading0",
-      "dcterms:description": "Grading0 is a parameter in the Grid section, which likely represents the grading of the grid in the radial direction. (inferred semantic name: grid_grading_radial)",
-      "has numerical value": -1.1,
+      "dcterms:description": "Grading0 is a grid parameter with two float values, likely representing the grading of the grid in the radial direction. (inferred semantic name: grid_grading_radial)",
+      "has numerical value": 1.1,
       "has unit": {
         "@id": "unit:UNITLESS"
       }
     },
     {
-      "@id": "local:field_Grid_Grading0_m1p1",
+      "@id": "local:field_Grid_Grading0_1p1",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Grid_Grading0_m1p1"
+        "@id": "local:variable_Grid_Grading0_1p1"
       },
       "source": {
-        "@id": "local:source_Grid_Grading0_m1p1"
+        "@id": "local:source_Grid_Grading0_1p1"
       }
     },
     {
-      "@id": "local:source_Grid_Grading0_m1p1",
+      "@id": "local:source_Grid_Grading0_1p1",
       "@type": "cr:DataSource",
       "extract": {
         "@id": "local:extract_Grading0"
@@ -382,7 +382,7 @@
       "@id": "local:variable_Grid_Grading1_1p0",
       "@type": "numerical variable",
       "label": "Grid.Grading1",
-      "dcterms:description": "Grading1 is a parameter in the Grid section, which likely represents the grading of the grid in the axial direction. (inferred semantic name: grid_grading_axial)",
+      "dcterms:description": "Grading1 is a grid parameter with a single float value, likely representing the grading of the grid in the axial direction. (inferred semantic name: grid_grading_axial)",
       "has numerical value": 1.0,
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -420,10 +420,10 @@
       "@id": "local:variable_Grid_Radial0_1p0",
       "@type": "numerical variable",
       "label": "Grid.Radial0",
-      "dcterms:description": "Radial distance of the first grid point from the center of the cylinder (inferred semantic name: Radial0)",
+      "dcterms:description": "Radial0 is a grid parameter with multiple float values, assigned to variable 'radii' of type std::vector<Scalar>, likely representing the radii of the grid. (inferred semantic name: radii)",
       "has numerical value": 1.0,
       "has unit": {
-        "@id": "unit:METER"
+        "@id": "http://qudt.org/vocab/quantitykind/Length"
       },
       "has quantity kind": {
         "@id": "http://qudt.org/vocab/quantitykind/Length"
@@ -458,33 +458,33 @@
       "jsonPath": "/Angular1"
     },
     {
-      "@id": "local:variable_Grid_Angular1_360p0",
+      "@id": "local:variable_Grid_Angular1_0p0",
       "@type": "numerical variable",
       "label": "Grid.Angular1",
-      "dcterms:description": "Angular1 is a parameter in the Grid section, which likely represents the angular positions of the grid. (inferred semantic name: angular_positions)",
-      "has numerical value": 360.0,
+      "dcterms:description": "Angular1 is a grid parameter with two float values, likely representing the angular range of the grid. (inferred semantic name: angular_range)",
+      "has numerical value": 0.0,
       "has unit": {
-        "@id": "http://qudt.org/vocab/unitkind/Angle"
+        "@id": "http://qudt.org/vocab/quantitykind/Angle"
       },
       "has quantity kind": {
         "@id": "http://qudt.org/vocab/quantitykind/Angle"
       }
     },
     {
-      "@id": "local:field_Grid_Angular1_360p0",
+      "@id": "local:field_Grid_Angular1_0p0",
       "@type": "Field",
       "dataType": {
         "@id": "schema:Float"
       },
       "represents": {
-        "@id": "local:variable_Grid_Angular1_360p0"
+        "@id": "local:variable_Grid_Angular1_0p0"
       },
       "source": {
-        "@id": "local:source_Grid_Angular1_360p0"
+        "@id": "local:source_Grid_Angular1_0p0"
       }
     },
     {
-      "@id": "local:source_Grid_Angular1_360p0",
+      "@id": "local:source_Grid_Angular1_0p0",
       "@type": "cr:DataSource",
       "extract": {
         "@id": "local:extract_Angular1"
@@ -502,7 +502,7 @@
       "@id": "local:variable_Problem_Name_test_rotatingcylinders",
       "@type": "numerical variable",
       "label": "Problem.Name",
-      "dcterms:description": "Name of the problem being simulated (inferred semantic name: ProblemName)",
+      "dcterms:description": "Name is a problem parameter with a string value, likely representing the name of the problem. (inferred semantic name: problem_name)",
       "has numerical value": "test_rotatingcylinders",
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -540,10 +540,10 @@
       "@id": "local:variable_Problem_Omega1_100p0",
       "@type": "numerical variable",
       "label": "Problem.Omega1",
-      "dcterms:description": "Angular velocity of the first cylinder in the simulation (inferred semantic name: Omega1)",
+      "dcterms:description": "Omega1 is a problem parameter with a float value, assigned to variable 'omega1_' of type Scalar, likely representing the angular velocity of the first cylinder. (inferred semantic name: angular_velocity_1)",
       "has numerical value": 100.0,
       "has unit": {
-        "@id": "unit:RADIANSPERSECOND"
+        "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
       },
       "has quantity kind": {
         "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
@@ -581,10 +581,10 @@
       "@id": "local:variable_Problem_Omega2_0p0",
       "@type": "numerical variable",
       "label": "Problem.Omega2",
-      "dcterms:description": "Angular velocity of the second cylinder in the simulation (inferred semantic name: Omega2)",
+      "dcterms:description": "Omega2 is a problem parameter with a float value, assigned to variable 'omega2_' of type Scalar, likely representing the angular velocity of the second cylinder. (inferred semantic name: angular_velocity_2)",
       "has numerical value": 0.0,
       "has unit": {
-        "@id": "unit:RADIANSPERSECOND"
+        "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
       },
       "has quantity kind": {
         "@id": "http://qudt.org/vocab/quantitykind/AngularVelocity"
@@ -622,7 +622,7 @@
       "@id": "local:variable_Problem_EnableGravity_false",
       "@type": "numerical variable",
       "label": "Problem.EnableGravity",
-      "dcterms:description": "Boolean parameter indicating whether gravity is enabled. (inferred semantic name: EnableGravity)",
+      "dcterms:description": "EnableGravity is a problem parameter with a boolean value, likely representing whether gravity is enabled or not. (inferred semantic name: enable_gravity)",
       "has numerical value": "false",
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -632,7 +632,7 @@
       "@id": "local:field_Problem_EnableGravity_false",
       "@type": "Field",
       "dataType": {
-        "@id": "schema:Boolean"
+        "@id": "schema:String"
       },
       "represents": {
         "@id": "local:variable_Problem_EnableGravity_false"
@@ -660,7 +660,7 @@
       "@id": "local:variable_Problem_EnableInertiaTerms_true",
       "@type": "numerical variable",
       "label": "Problem.EnableInertiaTerms",
-      "dcterms:description": "Boolean parameter indicating whether inertia terms are enabled. (inferred semantic name: EnableInertiaTerms)",
+      "dcterms:description": "EnableInertiaTerms is a problem parameter with a boolean value, likely representing whether inertia terms are enabled or not. (inferred semantic name: enable_inertia_terms)",
       "has numerical value": "true",
       "has unit": {
         "@id": "unit:UNITLESS"
@@ -670,7 +670,7 @@
       "@id": "local:field_Problem_EnableInertiaTerms_true",
       "@type": "Field",
       "dataType": {
-        "@id": "schema:Boolean"
+        "@id": "schema:String"
       },
       "represents": {
         "@id": "local:variable_Problem_EnableInertiaTerms_true"
@@ -702,7 +702,7 @@
           "@id": "local:variable_Grid_Cells1_320"
         },
         {
-          "@id": "local:variable_Grid_Grading0_m1p1"
+          "@id": "local:variable_Grid_Grading0_1p1"
         },
         {
           "@id": "local:variable_Grid_Grading1_1p0"
@@ -711,7 +711,7 @@
           "@id": "local:variable_Grid_Radial0_1p0"
         },
         {
-          "@id": "local:variable_Grid_Angular1_360p0"
+          "@id": "local:variable_Grid_Angular1_0p0"
         },
         {
           "@id": "local:variable_Problem_Name_test_rotatingcylinders"

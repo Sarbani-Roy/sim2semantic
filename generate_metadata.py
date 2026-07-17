@@ -485,40 +485,65 @@ def discover_cases(root: Path) -> list[tuple[Path, str]]:
 
 def validate_rocrate(doc: dict[str, Any], severity: str = "REQUIRED") -> bool:
     """Validate `doc` (the full {"@context", "@graph"} document) against the
-    RO-Crate 1.1 profile. Prints a pass/fail summary and any issues found.
-    Returns True if validation passed (or the validator isn't installed --
-    this check is informational and never aborts metadata generation).
+    RO-Crate 1.1 profile. Prints a completeness percentage plus a pass/fail
+    summary (at the requested `severity` threshold) and any issues found.
+    Returns True if validation passed at that threshold (or the validator
+    isn't installed -- this check is informational and never aborts
+    metadata generation).
+
+    Note on "completeness": this is the fraction of the *public* RO-Crate
+    1.1 profile's checks (REQUIRED+RECOMMENDED+OPTIONAL) that pass -- the
+    same idea as the completeness bar shown for Research Objects registered
+    in ROHub (https://www.rohub.org), but not the same number. ROHub's own
+    score comes from its proprietary, server-side MINIM-based checklist
+    service, computed only once a Research Object is actually
+    uploaded/registered there, and isn't reproducible offline.
     """
     try:
-        from rocrate_validator import services
+        from rocrate_validator import services, models
         from rocrate_validator.models.settings import ValidationSettings
     except ImportError:
         print(
             "\nSkipping RO-Crate validation: the 'rocrate_validator' package "
-            "isn't installed. Run `pip install roc-validator` to enable "
-            "`--validate` (https://github.com/crs4/rocrate-validator).",
+            "isn't installed. Run `pip install roc-validator` to enable it "
+            "(https://github.com/crs4/rocrate-validator).",
             file=sys.stderr,
         )
         return True
 
-    print(f"\nValidating RO-Crate against profile 'ro-crate-1.1' (severity >= {severity})...")
+    print("\nValidating RO-Crate against profile 'ro-crate-1.1'...")
+
+    # Always evaluate the full REQUIRED+RECOMMENDED+OPTIONAL check set so we
+    # can report a completeness percentage regardless of which severity
+    # threshold the caller cares about for pass/fail.
     settings = ValidationSettings(
         profile_identifier="ro-crate-1.1",
         metadata_only=True,
         metadata_dict=doc,
-        requirement_severity=severity,
+        requirement_severity="OPTIONAL",
     )
     result = services.validate_metadata_as_dict(doc, settings)
 
-    issues = result.get_issues()
-    if result.passed():
-        print(f"RO-Crate validation PASSED ({len(issues)} lower-severity note(s)).")
+    stats = result.statistics.to_dict()
+    checks = stats["checks"]
+    completeness = checks["passed"]["percentage"]
+    print(
+        f"Completeness: {completeness:.1f}% of RO-Crate 1.1 checks passed "
+        f"({checks['passed']['count']}/{checks['count']} checks, REQUIRED+RECOMMENDED+OPTIONAL)."
+    )
+
+    threshold = getattr(models.Severity, severity)
+    relevant_issues = [issue for issue in result.get_issues() if issue.severity >= threshold]
+    passed_at_threshold = result.passed(min_severity=threshold)
+
+    if passed_at_threshold:
+        print(f"RO-Crate validation PASSED at severity >= {severity}.")
     else:
-        print(f"RO-Crate validation FAILED -- {len(issues)} issue(s):", file=sys.stderr)
-    for issue in issues:
+        print(f"RO-Crate validation FAILED at severity >= {severity} -- {len(relevant_issues)} issue(s):", file=sys.stderr)
+    for issue in relevant_issues:
         print(f"  [{issue.severity.name}] {issue.message}", file=sys.stderr)
 
-    return result.passed()
+    return passed_at_threshold
 
 
 def find_main_cc(module_dir: Path, override: Path | None) -> Path:
