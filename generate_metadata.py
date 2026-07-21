@@ -776,9 +776,20 @@ def main() -> None:
             else:
                 print(f"Warning: Param '{pk}' provided in --scenario-params was not found in params.input. Skipping.", file=sys.stderr)
         if not selected_candidates:
-            print("Warning: None of the parameters specified in --scenario-params matched. Falling back to interactive selection.", file=sys.stderr)
+            # --scenario-params was explicitly given, so we never fall back
+            # to the interactive prompt (that would silently ignore the
+            # user's non-interactive intent, e.g. in a scripted/CI run).
+            # Fail loudly instead.
+            sys.exit(
+                "Error: None of the parameters specified in --scenario-params "
+                f"('{args.scenario_params}') were found in params.input. "
+                f"Available keys: {', '.join(sorted(c.key for c in raw_candidates))}"
+            )
 
-    if not selected_candidates:
+    # Only enter interactive selection when --scenario-params was not given
+    # at all; if it was given, `selected_candidates` is already final
+    # (non-empty, or we've already exited above).
+    if not args.scenario_params and not selected_candidates:
         default_candidates = default_scenario_candidates(raw_candidates)
         default_indices = {
             i for i, c in enumerate(raw_candidates) if c in default_candidates
